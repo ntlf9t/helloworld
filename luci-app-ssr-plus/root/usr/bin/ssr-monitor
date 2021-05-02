@@ -16,6 +16,8 @@ redir_udp_process=$3
 kcp_process=$4
 local_process=$5
 pdnsd_process=$6
+chinadns_process=$7
+privoxy_process=$8
 if [ -z "$pdnsd_process" ]; then
 	pdnsd_process=0
 fi
@@ -27,6 +29,22 @@ server_port=$(uci_get_by_name $GLOBAL_SERVER server_port)
 password=$(uci_get_by_name $GLOBAL_SERVER kcp_password)
 kcp_param=$(uci_get_by_name $GLOBAL_SERVER kcp_param)
 [ "$password" != "" ] && password="--key "${password}
+
+uci_get_by_name() {
+	local ret=$(uci get $NAME.$1.$2 2>/dev/null)
+	echo ${ret:=$3}
+}
+
+uci_get_by_type() {
+	local ret=$(uci get $NAME.@$1[0].$2 2>/dev/null)
+	echo ${ret:=$3}
+}
+
+if [ "$(uci_get_by_type global chinadns_enable)" = "0" ] ;then
+	dnsstrs="$(uci_get_by_type global tunnel_forward 8.8.4.4:53)"
+else
+	dnsstrs="0.0.0.0:5337"
+fi
 
 while [ "1" == "1" ]; do #死循环
 	sleep 000030s
@@ -74,10 +92,12 @@ while [ "1" == "1" ]; do #死循环
 	#localsocks
 	if [ "$local_process" -gt 0 ]; then
 		icount=$(busybox ps -w | grep ssr-local | grep -v grep | wc -l)
-		if [ "$icount" -lt "$local_process" ]; then #如果进程挂掉就重启它
+		icount1=$(busybox ps -w | grep local-ssr | grep -v grep | wc -l)
+		if [ "$icount" || "$icount1" -lt "$local_process" ]; then #如果进程挂掉就重启它
 			logger -t "$NAME" "global socks server error.restart!"
 			echolog "global socks server error.restart!"
 			kill -9 $(busybox ps -w | grep ssr-local | grep -v grep | awk '{print $1}') >/dev/null 2>&1
+			kill -9 $(busybox ps -w | grep local-ssr | grep -v grep | awk '{print $1}') >/dev/null 2>&1
 			/etc/init.d/shadowsocksr restart
 			exit 0
 		fi
@@ -96,10 +116,32 @@ while [ "1" == "1" ]; do #死循环
 			ln_start_bin $(first_type pdnsd) pdnsd -c $TMP_PATH/pdnsd.conf
 		fi
 	fi
+	#chiandns
+	if [ $chinadns_process -gt 0 ] ;then
+		icount=`ps -w  | grep chinadns |grep -v grep| wc -l`
+		if [ $icount -lt $chinadns_process ]; then
+			logger -t "$NAME" "chinadns tunnel error.restart!"
+			echo "$(date "+%Y-%m-%d %H:%M:%S") chinadns tunnel error.restart!" >> ${logfile}
+			kill -9 $(ps | grep chinadns | grep -v grep | awk '{print $1}') >/dev/null 2>&1 
+
+			(nohup /usr/bin/chinadns -p 5335 -c /etc/china_ssr.txt -m -d -s $dnsstrs >/dev/null 2>&1 &)
+		fi   
+	fi
+	#privoxy
+	if [ $privoxy_process -gt 0 ] ;then
+		icount=`ps -w  | grep privoxy |grep -v grep| wc -l`
+		if [ $icount -lt $privoxy_process ]; then
+			logger -t "$NAME" "privoxy http local error.restart!"
+			echo "$(date "+%Y-%m-%d %H:%M:%S") privoxy http loca error.restart!" >> ${logfile}
+			kill -9 $(ps | grep privoxy | grep -v grep | awk '{print $1}') >/dev/null 2>&1 
+
+			/etc/init.d/privoxy restart
+		fi   
+	fi
 	#dns2socks
-	if [ "$pdnsd_process" -eq 2 ]; then
+	if [ "$pdnsd_process" -eq 6 ]; then
 		icount=$(busybox ps -w | grep -e ssrplus-dns -e "dns2socks 127.0.0.1 $tmp_dns_port" | grep -v grep | wc -l)
-		if [ "$icount" -lt 2 ]; then #如果进程挂掉就重启它
+		if [ "$icount" -lt 6 ]; then #如果进程挂掉就重启它
 			logger -t "$NAME" "dns2socks $dnsstr tunnel error.restart!"
 			echolog "dns2socks $dnsstr tunnel error.restart!"
 			dnsstr=$(uci_get_by_type global tunnel_forward 8.8.4.4:53)

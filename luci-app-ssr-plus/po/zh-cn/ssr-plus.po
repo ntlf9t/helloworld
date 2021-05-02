@@ -427,8 +427,29 @@ msgstr "格式为 IP:PORT (默认: 8.8.4.4:53)"
 msgid "Use Pdnsd tcp query and cache"
 msgstr "使用PDNSD TCP查询并缓存"
 
+msgid "Use Pdnsd udp query and cache"
+msgstr "使用PDNSD UDP查询并缓存"
+
+msgid "Use dnsforwarder tcp query and cache"
+msgstr "使用dnsforwarder TCP查询并缓存"
+
+msgid "Use dnsforwarder udp query and cache"
+msgstr "使用dnsforwarder UDP查询并缓存"
+
+msgid "Use dnscrypt-proxy query and cache"
+msgstr "使用dnscrypt-proxy查询并缓存"
+
+msgid "Use chinadns query and cache"
+msgstr "使用chinadns查询并缓存"
+
+msgid "Chiadns Resolve Dns Mode"
+msgstr "chinaDNS解析方式"
+
 msgid "Use DNS2SOCKS query and cache"
 msgstr "使用 DNS2SOCKS 查询并缓存"
+
+msgid "Use Local DNS Service"
+msgstr "使用设定dns解析"
 
 msgid "DNS Server IP:Port"
 msgstr "DNS服务器 IP:Port"
@@ -741,3 +762,18 @@ msgstr "重置pdnsd缓存"
 
 msgid "Finger Print"
 msgstr "指纹伪造"
+
+msgid "HTTP Proxy"
+msgstr "HTTP代理"
+
+msgid "Enable HTTP Proxy"
+msgstr "启用HTTP代理"
+
+msgid "HTTP Port"
+msgstr "HTTP代理端口"
+
+msgid "Using System Default DNS"
+msgstr "使用系统默认dns"
+
+msgid "Using acceleration center DNS"
+msgstr "使用加速中心dns"

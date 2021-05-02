@@ -3,9 +3,9 @@ local server_table = {}
 
 uci:foreach("shadowsocksr", "servers", function(s)
 	if s.alias then
-		server_table[s[".name"]] = "[%s]:%s" % {string.upper(s.v2ray_protocol or s.type), s.alias}
+		server_table[s[".name"]] = "[%s]:%s" % {string.upper(s.type), s.alias}
 	elseif s.server and s.server_port then
-		server_table[s[".name"]] = "[%s]:%s:%s" % {string.upper(s.v2ray_protocol or s.type), s.server, s.server_port}
+		server_table[s[".name"]] = "[%s]:%s:%s" % {string.upper(s.type), s.server, s.server_port}
 	end
 end)
 
@@ -94,5 +94,17 @@ o = s:option(Value, "local_port", translate("Local Port"))
 o.datatype = "port"
 o.default = 1080
 o.rmempty = false
+
+-- [[ HTTP Proxy ]]--
+if nixio.fs.access("/usr/sbin/privoxy") then
+o = s:option(Flag, "http_enable", translate("Enable HTTP Proxy"))
+o.rmempty = false
+
+o = s:option(Value, "http_port", translate("HTTP Port"))
+o.datatype = "port"
+o.default = 1081
+o.rmempty = false
+
+end
 
 return m

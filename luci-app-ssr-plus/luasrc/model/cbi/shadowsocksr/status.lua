@@ -14,6 +14,10 @@ local gfw_count = 0
 local ad_count = 0
 local ip_count = 0
 local nfip_count = 0
+local dnsforwarder_run=0
+local dnscrypt_proxy_run=0
+local privoxy_run=0
+local chinadns_run=0
 local Process_list = luci.sys.exec("busybox ps -w")
 local uci = luci.model.uci.cursor()
 -- html constants
@@ -91,6 +95,22 @@ if Process_list:find("ssrplus/bin/pdnsd") or (Process_list:find("ssrplus.dns") a
 	pdnsd_run = 1
 end
 
+if luci.sys.call("pidof dnsparsing >/dev/null") == 0 then                 
+dnsforwarder_run=1     
+end
+
+if luci.sys.call("pidof dnscrypt-proxy >/dev/null") == 0 then                 
+dnscrypt_proxy_run=1     
+end
+
+if luci.sys.call("pidof chinadns >/dev/null") == 0 then                 
+chinadns_run=1     
+end	
+
+if luci.sys.call("pidof privoxy >/dev/null") == 0 then
+privoxy_run=1
+end
+
 m = SimpleForm("Version")
 m.reset = false
 m.submit = false
@@ -129,12 +149,48 @@ else
 	s.value = translate("Not Running")
 end
 
+if nixio.fs.access("/usr/sbin/privoxy") then
+s=m:field(DummyValue,"privoxy_run",translate("HTTP Proxy")) 
+s.rawhtml  = true
+if privoxy_run == 1 then
+s.value =font_blue .. bold_on .. translate("Running") .. bold_off .. font_off
+else
+s.value = translate("Not Running")
+end
+end
+
 s = m:field(DummyValue, "server_run", translate("Local Servers"))
 s.rawhtml = true
 if server_run == 1 then
 	s.value = font_blue .. bold_on .. translate("Running") .. bold_off .. font_off
 else
 	s.value = translate("Not Running")
+end
+
+s=m:field(DummyValue,"dnsforwarder_run",translate("dnsforwarder"))
+s.rawhtml  = true                                              
+if dnsforwarder_run == 1 then                             
+s.value =font_blue .. bold_on .. translate("Running") .. bold_off .. font_off
+else             
+s.value = translate("Not Running")
+end
+
+s=m:field(DummyValue,"dnscrypt_proxy_run",translate("dnscrypt_proxy"))
+s.rawhtml  = true                                              
+if dnscrypt_proxy_run == 1 then                             
+s.value =font_blue .. bold_on .. translate("Running") .. bold_off .. font_off
+else             
+s.value = translate("Not Running")
+end
+
+if nixio.fs.access("/usr/bin/chinadns") then
+s=m:field(DummyValue,"chinadns_run",translate("chinadns")) 
+s.rawhtml  = true
+if chinadns_run == 1 then
+s.value =font_blue .. bold_on .. translate("Running") .. bold_off .. font_off
+else
+s.value = translate("Not Running")
+end
 end
 
 if nixio.fs.access("/usr/bin/kcptun-client") then

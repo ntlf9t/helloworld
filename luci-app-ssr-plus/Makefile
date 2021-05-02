@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-ssr-plus
 PKG_VERSION:=183
-PKG_RELEASE:=11
+PKG_RELEASE:=14
 
 define Package/$(PKG_NAME)/conffiles
 /etc/config/shadowsocksr
@@ -47,6 +47,23 @@ config PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun
 config PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Server
 	bool "Include ShadowsocksR Server"
 	default y if i386||x86_64||arm||aarch64
+
+config PACKAGE_$(PKG_NAME)_INCLUDE_dnscrypt_proxy_full
+	bool "dnscrypt-proxy-full"
+	default n
+
+config PACKAGE_$(PKG_NAME)_INCLUDE_dnsforwarder
+	bool "dnsforwarder"
+	default n
+
+config PACKAGE_$(PKG_NAME)_INCLUDE_ChinaDNS
+	bool "chiandns"
+	default n
+
+config PACKAGE_$(PKG_NAME)_INCLUDE_privoxy
+	bool "privoxy http local"
+	default n
+
 endef
 
 LUCI_TITLE:=SS/SSR/V2Ray/Trojan/NaiveProxy/Socks5/Tun LuCI interface
@@ -65,6 +82,10 @@ LUCI_DEPENDS:=+shadowsocksr-libev-alt +ipset +ip-full +iptables-mod-tproxy +dnsm
 	+PACKAGE_$(PKG_NAME)_INCLUDE_NaiveProxy:naiveproxy \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_Redsocks2:redsocks2 \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun:kcptun-client \
+	+PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun:dnscrypt-proxy-full \
+	+PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun:dnsforwarder \
+	+PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun:ChinaDNS \
+	+PACKAGE_$(PKG_NAME)_INCLUDE_Kcptun:privoxy \
 	+PACKAGE_$(PKG_NAME)_INCLUDE_ShadowsocksR_Server:shadowsocksr-libev-server
 
 include $(TOPDIR)/feeds/luci/luci.mk
